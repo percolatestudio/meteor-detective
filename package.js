@@ -3,9 +3,9 @@ Package.describe({
 });
 
 Package.on_use(function (api, where) {
-  api.add_files('performance.js', 'client');
+  api.add_files('detective.js', 'client');
   
   api.use(['mongo-livedata', 'iron-router']);
   
-  api.export('Performance')
+  api.export('Detective')
 });

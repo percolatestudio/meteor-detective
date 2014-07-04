@@ -1,6 +1,6 @@
 var LocalCollectionDriver = Package['mongo-livedata'].LocalCollectionDriver;
 
-Performance = {
+Detective = {
   _totalDataSize: 0,
 
   collectionSize: function(collection) {
@@ -17,14 +17,14 @@ Performance = {
   collectionSizeByName: function() {
     var result = {};
     _.each(Meteor.connection._mongo_livedata_collections, function(collection, name) {
-      result[name] = Performance.collectionSize(collection);
+      result[name] = Detective.collectionSize(collection);
     });
     return result;
   },
   
   // only works on client
   allCollectionsSize: function() {
-    return _.reduce(Performance.collectionSizeByName(), function(size, total) {
+    return _.reduce(Detective.collectionSizeByName(), function(size, total) {
       return size.size + total;
     });
   },
@@ -73,17 +73,17 @@ Performance = {
   }
 }
 
-Performance.startMeasuring();
+Detective.startMeasuring();
 
 Router.onRun(function() {
   // console.log("In between Routes:")
   // console.log("__________________")
-  // Performance.takeMeasurement();
+  // Detective.takeMeasurement();
   // console.log('');
   
-  Performance.takeInBetweenMeasurement();
+  Detective.takeInBetweenMeasurement();
   
-  Performance.startMeasuring();
+  Detective.startMeasuring();
 });
 
 Router.onBeforeAction(function() {
@@ -92,9 +92,9 @@ Router.onBeforeAction(function() {
     console.log("Route loading time:")
     console.log("__________________")
     console.log('[' + this.route.name + ']')
-    Performance.takeMeasurement();
+    Detective.takeMeasurement();
     console.log('');
   
-    Performance.startMeasuring();
+    Detective.startMeasuring();
   }
 });
