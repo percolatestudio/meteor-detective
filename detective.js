@@ -75,8 +75,9 @@ Detective = {
 
 Detective.startMeasuring();
 
-// back-comp for IR
-(Router.onRun || Router.load)(function() {
+// back-comp
+var onRun = Router.onRun || Router.load;
+onRun(function() {
   // console.log("In between Routes:")
   // console.log("__________________")
   // Detective.takeMeasurement();
@@ -87,8 +88,8 @@ Detective.startMeasuring();
   Detective.startMeasuring();
 });
 
-// backcomp for IR
-(Router.onBeforeAction || Router.before)(function() {
+var onBeforeAction = Router.onBeforeAction || Router.before;
+onBeforeAction(function() {
   if (this.ready() && ! this._loggedPerformance) {
     this._loggedPerformance = true;
     console.log("Route loading time:")
