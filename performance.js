@@ -45,15 +45,22 @@ Performance = {
     console.log(str);
   },
   
+  totalData: function() {
+    return this._totalDataSize;
+  },
+  
   startMeasuring: function() {
     var self = this;
     self._startTime = new Date;
     self._dataSize = 0;
     
-    Meteor.connection._stream.on('message', function(data) {
-      self._dataSize += data.length;
-      self._totalDataSize += data.length;
-    });
+    if (! self._handling )
+      Meteor.connection._stream.on('message', function(data) {
+        self._dataSize += data.length;
+        self._totalDataSize += data.length;
+      });
+    
+    self._handling = true;
   },
   
   takeMeasurement: function() {
