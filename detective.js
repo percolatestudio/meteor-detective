@@ -45,7 +45,7 @@ Detective = {
     console.log(str);
   },
   
-  totalData: function() {
+  totalDataSize: function() {
     return this._totalDataSize;
   },
   
