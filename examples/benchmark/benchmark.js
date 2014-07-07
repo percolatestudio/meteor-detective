@@ -1,5 +1,5 @@
-DOCUMENT_COUNT = 1000;
-DOCUMENT_SIZE = 100;
+DOCUMENT_COUNT = 2540;
+DOCUMENT_SIZE = 1707;
 
 BenchmarkData = new Meteor.Collection('benchmarkData');
 
@@ -30,7 +30,8 @@ randomString = function(length) {
 }
 
 if (Meteor.isServer) {
-  if (BenchmarkData.find().count() === 0) {
+  if (BenchmarkData.find().count() != DOCUMENT_COUNT) {
+    BenchmarkData.remove({}); //incase we've changed params
     console.log('Generating approximately ' + (DOCUMENT_COUNT * DOCUMENT_SIZE)
       + ' bytes of data...');
 
