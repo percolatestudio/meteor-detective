@@ -77,7 +77,7 @@ Detective.startMeasuring();
 
 // back-comp
 // var onRun = Router.onRun || Router.load;
-Router.load(function() {
+Router.onRun(function() {
   // console.log("In between Routes:")
   // console.log("__________________")
   // Detective.takeMeasurement();
@@ -88,8 +88,7 @@ Router.load(function() {
   Detective.startMeasuring();
 });
 
-// var onBeforeAction = Router.onBeforeAction || Router.before;
-Router.before(function() {
+Router.onBeforeAction(function() {
   if (this.ready() && ! this._loggedPerformance) {
     this._loggedPerformance = true;
     console.log("Route loading time:")
@@ -100,4 +99,6 @@ Router.before(function() {
   
     Detective.startMeasuring();
   }
+  
+  this.next();
 });
