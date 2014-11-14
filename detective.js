@@ -86,6 +86,8 @@ Router.onRun(function() {
   Detective.takeInBetweenMeasurement();
   
   Detective.startMeasuring();
+  
+  this.next();
 });
 
 Router.onBeforeAction(function() {
