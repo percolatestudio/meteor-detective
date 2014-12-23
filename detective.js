@@ -64,11 +64,11 @@ Detective = {
     self._handling = true;
   },
 
-  takeMeasurement: function(msg) {
+  takeMeasurement: function(message) {
     var now = new Date;
     var cumulative = (now - this._startTime) / 1000;
     var delta = (now - this._prevTime) / 1000;
-    console.log(msg, '|', delta, 'sec |', cumulative, 'sec |', this._dataSize, 'bytes');
+    console.log(message, '|', delta, 'sec |', cumulative, 'sec |', this._dataSize, 'bytes');
     this._prevTime = now;
   },
 
@@ -77,35 +77,33 @@ Detective = {
   }
 }
 
-//
-// Detective.startMeasuring();
-//
-// // back-comp
-// // var onRun = Router.onRun || Router.load;
-// Router.onRun(function() {
-//   // console.log("In between Routes:")
-//   // console.log("__________________")
-//   // Detective.takeMeasurement();
-//   // console.log('');
-//
-//   Detective.takeInBetweenMeasurement();
-//
-//   Detective.startMeasuring();
-//
-//   this.next();
-// });
-//
-// Router.onBeforeAction(function() {
-//   if (this.ready() && ! this._loggedPerformance) {
-//     this._loggedPerformance = true;
-//     console.log("Route loading time:")
-//     console.log("__________________")
-//     console.log('[' + this.route.name + ']')
-//     Detective.takeMeasurement();
-//     console.log('');
-//
-//     Detective.startMeasuring();
-//   }
-//
-//   this.next();
-// });
+Detective.startMeasuring();
+
+var STATE = {START: 0, WAITING: 1, READY: 2, RENDERED: 3};
+var STATE_NAMES = {0: 'start', 1: 'waiting', 2: 'ready', 3: 'rendered'};
+
+Router.onRun(function() {
+  Detective.takeInBetweenMeasurement();
+  console.log("message | delta | cumulative | data ");
+  console.log("------------------------------------")
+  Detective.startMeasuring();
+  this._state = STATE.START;
+  this.next();
+});
+
+Router.onBeforeAction(function() {
+  var state = this.ready() ? STATE.READY : STATE.WAITING;
+  if(state > this._state) {
+    Detective.takeMeasurement(this.route.getName() + ": " + STATE_NAMES[state]);
+    this._state = state;
+  }
+  this.next();
+});
+
+Router.onAfterAction(function() {
+  var state = STATE.RENDERED;
+  if(this.ready() && state > this._state) {
+    Detective.takeMeasurement(this.route.getName() + ": " + STATE_NAMES[state]);
+    this._state = state;
+  }
+});
