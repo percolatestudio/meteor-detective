@@ -85,7 +85,7 @@ var STATE_NAMES = {0: 'start', 1: 'waiting', 2: 'ready', 3: 'rendered'};
 Router.onRun(function() {
   Detective.takeInBetweenMeasurement();
   console.log("message | delta | cumulative | data ");
-  console.log("------------------------------------")
+  console.log("--------|-------|------------|------")
   Detective.startMeasuring();
   this._state = STATE.START;
   this.next();
