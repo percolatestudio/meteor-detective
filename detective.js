@@ -13,7 +13,7 @@ Detective = {
     });
     return {size: size, count: collection.find().count()};
   },
-  
+
   collectionSizeByName: function() {
     var result = {};
     _.each(Meteor.connection._mongo_livedata_collections, function(collection, name) {
@@ -21,14 +21,14 @@ Detective = {
     });
     return result;
   },
-  
+
   // only works on client
   allCollectionsSize: function() {
     return _.reduce(Detective.collectionSizeByName(), function(size, total) {
       return size.size + total;
     });
   },
-  
+
   logAllCollections: function() {
     var sizes = this.collectionSizeByName();
     var totalSize = 0, totalCount = 0;
@@ -39,35 +39,39 @@ Detective = {
       totalSize += size.size;
       totalCount += size.count;
     });
-    
+
     str += '=======\nTOTAL-> size:' + totalSize + ' count:' + totalCount;
-    
+
     console.log(str);
   },
-  
+
   totalDataSize: function() {
     return this._totalDataSize;
   },
-  
+
   startMeasuring: function() {
     var self = this;
     self._startTime = new Date;
+    self._prevTime = new Date;
     self._dataSize = 0;
-    
+
     if (! self._handling )
       Meteor.connection._stream.on('message', function(data) {
         self._dataSize += data.length;
         self._totalDataSize += data.length;
       });
-    
+
     self._handling = true;
   },
-  
-  takeMeasurement: function() {
-    console.log('Took', (new Date - this._startTime) / 1000, 'seconds');
-    console.log('Received', this._dataSize, 'bytes of data');
+
+  takeMeasurement: function(message) {
+    var now = new Date;
+    var cumulative = (now - this._startTime) / 1000;
+    var delta = (now - this._prevTime) / 1000;
+    console.log(message, '|', delta, 'sec |', cumulative, 'sec |', this._dataSize, 'bytes');
+    this._prevTime = now;
   },
-  
+
   takeInBetweenMeasurement: function() {
     console.log('Received', this._dataSize, 'bytes between routes');
   }
@@ -75,32 +79,31 @@ Detective = {
 
 Detective.startMeasuring();
 
-// back-comp
-// var onRun = Router.onRun || Router.load;
+var STATE = {START: 0, WAITING: 1, READY: 2, RENDERED: 3};
+var STATE_NAMES = {0: 'start', 1: 'waiting', 2: 'ready', 3: 'rendered'};
+
 Router.onRun(function() {
-  // console.log("In between Routes:")
-  // console.log("__________________")
-  // Detective.takeMeasurement();
-  // console.log('');
-  
   Detective.takeInBetweenMeasurement();
-  
+  console.log("message | delta | cumulative | data ");
+  console.log("--------|-------|------------|------")
   Detective.startMeasuring();
-  
+  this._state = STATE.START;
   this.next();
 });
 
 Router.onBeforeAction(function() {
-  if (this.ready() && ! this._loggedPerformance) {
-    this._loggedPerformance = true;
-    console.log("Route loading time:")
-    console.log("__________________")
-    console.log('[' + this.route.name + ']')
-    Detective.takeMeasurement();
-    console.log('');
-  
-    Detective.startMeasuring();
+  var state = this.ready() ? STATE.READY : STATE.WAITING;
+  if(state > this._state) {
+    Detective.takeMeasurement(this.route.getName() + ": " + STATE_NAMES[state]);
+    this._state = state;
   }
-  
   this.next();
+});
+
+Router.onAfterAction(function() {
+  var state = STATE.RENDERED;
+  if(this.ready() && state > this._state) {
+    Detective.takeMeasurement(this.route.getName() + ": " + STATE_NAMES[state]);
+    this._state = state;
+  }
 });
